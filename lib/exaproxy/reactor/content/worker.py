@@ -25,14 +25,22 @@ class Content (object):
 
 	__slots__ = ['client_id', 'sock', 'host', 'port', 'method', 'w_buffer', 'log', 'ipv4']
 
-	def __init__(self, client_id, host, port, bind, method, request, logger):
+	def __init__(self, client_id, host, port, bind, method, request, logger,client):
 		self.client_id = client_id
-		self.sock = self._connect(host, port, bind)
+		#bind = host
+		
+		self.sock = self._connect(host, port, client.sock.getsockname()[0])
 		self.host = host
 		self.port = port
+		#self.host = '92.222.237.53'
 		self.method = method
 		self.w_buffer = request
 		self.log = logger
+                self.log.info(client.sock.getpeername())
+                self.log.info(client.sock.getsockname())
+
+		#self.log.info(socket)
+		#self.log.info("%s_%s_%s_%s"%(self.client_id,host,port,bind))		
 		self.ipv4 = isipv4(host)
 
 	def startConversation(self):

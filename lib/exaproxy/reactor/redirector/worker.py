@@ -208,33 +208,27 @@ class Redirector:
 		# NOTE: we are always returning an HTTP/1.1 response
 		method = message.request.method
 
-		if message.headers.get('max-forwards',''):
-			max_forwards = message.headers.get('max-forwards','Max-Forwards: -1')[-1].split(':')[-1].strip()
-			max_forward = int(max_forwards) if max_forwards.isdigit() else None
-
-			if max_forward is None:
-				response = Respond.http(client_id, http('400', 'INVALID MAX-FORWARDS\n'))
+		header = message.headers.get('max-forwards', '')
+		if header:
+			value = header[-1].split(':')[-1].strip()
+			if not value.isdigit():
 				self.usage.logRequest(client_id, peer, method, message.url, 'ERROR', 'INVALID MAX FORWARDS')
+				return Respond.http(client_id, http('400', 'INVALID MAX-FORWARDS\n'))
 
-			elif max_forward == 0:
-				response = Respond.http(client_id, http('200', ''))
+			max_forward = int(value)
+			if max_forward == 0:
 				self.usage.logRequest(client_id, peer, method, message.url, 'PERMIT', method)
-
-			else:
-				response = None
+				return Respond.http(client_id, http('200', ''))
 
 			message.headers.set('max-forwards','Max-Forwards: %d' % (max_forward-1))
 
-		if response is None:
-			response = Respond.download(client_id, message.headerhost, message.port, message.upgrade, message.content_length, message)
-
-		return response
+		return Respond.download(client_id, message.headerhost, message.port, message.upgrade, message.content_length, message)
 
 	def doHTTP (self, client_id, peer, http_header, source):
 		message = self.parseHTTP(client_id, peer, http_header)
 		response = self.validateHTTP(client_id, message)
 
-		if message is not None:
+		if message.validated:
 			message = self.addHeaders(message, peer)
 			method = message.request.method
 
@@ -262,7 +256,7 @@ class Redirector:
 				response = Respond.http(client_id, http('405', ''))  # METHOD NOT ALLOWED
 				self.usage.logRequest(client_id, peer, method, message.url, 'DENY', method)
 
-		else:
+		elif response is None:
 			response = Respond.hangup(client_id)
 
 		return response

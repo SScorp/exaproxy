@@ -73,6 +73,17 @@ class ClientManager (object):
 
 		#self.log.info('new id %s (socket %s) in clients : %s' % (name, sock, sock in self.bysock))
 		return peer
+	def get_next(self,obj,retry = 3):
+		for key in dir(obj):
+			value = getattr(obj,key)
+			try:
+				if type(value) not in [str,int,list,dict,float,unicode] and retry > 0:
+					retry -=1
+					self.get_next(value,retry)
+				else:
+					self.log.info('%s : %s'%(key,value))
+			except:
+				self.log.info('%s : %s'%(key,value))
 
 	def readRequest (self, sock):
 		"""Read only the initial HTTP headers sent by the client"""
@@ -80,6 +91,12 @@ class ClientManager (object):
 		client, source = self.norequest.get(sock, (None, None))
 		if client:
 			name, peer, request, subrequest, content = client.readData()
+			#self.log.info('%s %s %s %s %s %s' %(name, peer, request, subrequest, content,sock))
+			#for key in dir(sock):
+			#	self.log.info('%s : %s'%(key,getattr(sock,key)))
+			#self.get_next(sock)
+			self.log.info(sock.getpeername())
+			self.log.info(sock.getsockname())
 			if request:
 				self.total_requested += 1
 				# headers can be read only once

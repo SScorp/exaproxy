@@ -1,4 +1,5 @@
 import socket
+from exaproxy.util.log.logger import Logger
 
 def validate_ip4 (address):
 	try:
@@ -28,7 +29,8 @@ class ProxyProtocol:
 		'TCP6' : validate_ip6,
 		'UNKNOWN' : invalidate
 	}
-
+	def __init__(self):
+		self.log = self.log = Logger('loging')
 	def parseRequest (self, header):
 		if '\r\n' in header:
 			proxy_line, http_request = header.split('\r\n', 1)
@@ -48,6 +50,10 @@ class ProxyProtocol:
 
 		validate = self.ip_validators.get(fproto, invalidate)
 		source_addr = validate(source)
+		self.log(source_addr)
+		self.log(validate(destination))
+		self.log(destination)
+		print source_addr,validate(destination),destination
 		dest_addr = validate(destination)  # pylint: disable=W0612
-
+		print source_addr, http_request,"2"
 		return source_addr, http_request

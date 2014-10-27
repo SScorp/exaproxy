@@ -93,7 +93,7 @@ class ContentManager(object):
 		return content
 
 
-	def getDownloader(self, client_id, host, port, command, request):
+	def getDownloader(self, client_id, host, port, command, request,socket_):
 		downloader = self.byclientid.get(client_id, None)
 		if downloader:
 			# NOTE: with pipeline, consequent request could go to other sites if the browser knows we are a proxy
@@ -125,7 +125,7 @@ class ContentManager(object):
 					# we did not break
 					return None, False
 
-			downloader = self.downloader_factory(client_id, host, port, bind, command, request, self.log)
+			downloader = self.downloader_factory(client_id, host, port, bind, command, request, self.log,socket_)
 			newdownloader = True
 
 		if downloader.sock is None:
@@ -133,7 +133,9 @@ class ContentManager(object):
 
 		return downloader, newdownloader
 
-	def getContent(self, client_id, command, args):
+	def getContent(self, client_id, command, args,client_object):
+		client, source = client_object.byname.get(client_id, (None, None))
+		
 		try:
 			if command == 'download':
 				try:
@@ -141,7 +143,7 @@ class ContentManager(object):
 				except (ValueError, TypeError), e:
 					raise ParsingError()
 
-				downloader, newdownloader = self.getDownloader(client_id, host, int(port), command, request)
+				downloader, newdownloader = self.getDownloader(client_id, host, int(port), command, request,client)
 
 				if downloader is not None:
 					content = ('stream', '')
@@ -159,7 +161,7 @@ class ContentManager(object):
 				except (ValueError, TypeError), e:
 					raise ParsingError()
 
-				downloader, newdownloader = self.getDownloader(client_id, host, int(port), command, '')
+				downloader, newdownloader = self.getDownloader(client_id, host, int(port), command, '',client)
 
 				if downloader is not None:
 					content = ('stream', '')

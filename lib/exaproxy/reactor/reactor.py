@@ -195,7 +195,7 @@ class Reactor(object):
 			# all decisions we are currently able to process
 			for client_id, command, decision in decisions:
 				# send the possibibly rewritten request to the server
-				response, length, status, buffer_change = self.content.getContent(client_id, command, decision)
+				response, length, status, buffer_change = self.content.getContent(client_id, command, decision,self.client)
 
 				if buffer_change:
 					if status:
