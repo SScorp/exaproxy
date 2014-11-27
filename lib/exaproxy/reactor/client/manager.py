@@ -95,8 +95,8 @@ class ClientManager (object):
 			#for key in dir(sock):
 			#	self.log.info('%s : %s'%(key,getattr(sock,key)))
 			#self.get_next(sock)
-			self.log.info(sock.getpeername())
-			self.log.info(sock.getsockname())
+			#self.log.info(sock.getpeername())
+			#self.log.info(sock.getsockname())
 			if request:
 				self.total_requested += 1
 				# headers can be read only once
